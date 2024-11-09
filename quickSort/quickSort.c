@@ -1,43 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include "../util/nums2sort.h"
 
-void printList(int *numberList, int size){
+void maxHeapify(int **numberList, int index,int numbersSize){
+	int l,r,largest;
 	
-	for(int i = 0 ; i < size; i++){
-		printf("%d ",numberList[i]);
+	if (index == 0)
+	{
+		l = 1;
+		r = 2;
+	}else{
+
+		l = index << 1;
+		r = (index << 1) +1;
 	}	
-	printf("\n");
-}
+	printf("--------pre----numbersSize = %d indx = %d  l = %d r = %d---\n",numbersSize,index,l,r );
 
-int  readNumbersFromFile( char *fileName, int  maxSize, int **numberList ){
+	printList(*numberList, numbersSize);
 
-	FILE *file;
-	int count = 0;
-	file = fopen(fileName,"r");
-	
-	printf("Reading file ... \n");
-	if(file == NULL){
-		printf("FILE ERROR\n");
-		return 1;
+	if(l < numbersSize && (*numberList)[l] > (*numberList)[index])
+		largest = l;
+	else
+		largest = index;
+	if(r < numbersSize && (*numberList)[r] > (*numberList)[index])
+		largest = r;
+	if(largest != index){
+		int aux = (*numberList)[index];
+		(*numberList)[index] = (*numberList)[largest];
+		(*numberList)[largest] = aux;
 	}
-		
-	*numberList = (int *)malloc(maxSize * sizeof(int) );
-
-	while(fscanf(file,"%d", (*numberList)+count   ) != EOF  && count < maxSize  )
-		count++;
 	
-	fclose(file);
+	printf("--------post-------\n");
+	printList(*numberList, numbersSize);
 
-	printf("Reading file DONE\n");
-	printf("All numbers to sort: %d \n",count );
-	
-
-	return count;
+	return;
 }
 
+void maxHeap(int **numberList,int numbersSize){
+
+	for(int i = floor(numbersSize/2); i >=0 ;i--)
+		maxHeapify(numberList,i,numbersSize);
+
+	return;
+}
 
 int main(int argc, char **argv){
-
 	
 	int *numberList = NULL;
         int maxSize = atoi(argv[2]);
@@ -46,26 +54,11 @@ int main(int argc, char **argv){
 
 	printf("MAX SIZE  %d \n",maxSize);
 
-	numbersSize = readNumbersFromFile( argv[1], maxSize, &numberList );
-	
+	numbersSize = readNumbersFromFile( argv[1], maxSize, &numberList );	
 	printList(numberList, numbersSize);
-	
-	changes = 1;
-	
-	while(changes != 0){
-		changes = 0;
-		for(int i = 1; i < numbersSize; i++){
-			
-			if( numberList[i] < numberList[i-1] ) {
-				aux = numberList[i];
-				numberList[i] = numberList[i-1];
-				numberList[i-1] = aux;
-				changes++;
-			}  
-		}
 
+	maxHeap(&numberList,numbersSize);
 
-	}
 
 	printList(numberList, numbersSize);
 	free(numberList);
