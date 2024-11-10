@@ -15,24 +15,27 @@ void maxHeapify(int **numberList, int index,int numbersSize){
 		l = index << 1;
 		r = (index << 1) +1;
 	}	
-	printf("--------pre----numbersSize = %d indx = %d  l = %d r = %d---\n",numbersSize,index,l,r );
+	//printf("--------pre----numbersSize = %d indx = %d  l = %d r = %d---\n",numbersSize,index,l,r );
 
-	printList(*numberList, numbersSize);
+	//printList(*numberList, numbersSize);
 
 	if(l < numbersSize && (*numberList)[l] > (*numberList)[index])
 		largest = l;
 	else
 		largest = index;
-	if(r < numbersSize && (*numberList)[r] > (*numberList)[index])
+	if(r < numbersSize && (*numberList)[r] > (*numberList)[largest])
 		largest = r;
 	if(largest != index){
 		int aux = (*numberList)[index];
 		(*numberList)[index] = (*numberList)[largest];
 		(*numberList)[largest] = aux;
+		maxHeapify(numberList,largest ,numbersSize);
 	}
 	
-	printf("--------post-------\n");
-	printList(*numberList, numbersSize);
+
+	//printf("--------post-------\n");
+	
+	///printList(*numberList, numbersSize);
 
 	return;
 }
@@ -58,7 +61,14 @@ int main(int argc, char **argv){
 	printList(numberList, numbersSize);
 
 	maxHeap(&numberList,numbersSize);
+	int auxNumbersSize = numbersSize;
+	for(int i = numbersSize; i > 0; i--){
+		int aux = numberList[0];
+		numberList[0] = numberList[i];
+		numberList[i] = aux;
+		maxHeapify(&numberList,0, --auxNumbersSize);
 
+	}
 
 	printList(numberList, numbersSize);
 	free(numberList);
