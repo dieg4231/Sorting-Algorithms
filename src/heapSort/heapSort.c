@@ -1,70 +1,92 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "../util/nums2sort.h"
+#include "../util/sortutil.h"
 
-void maxHeapify(int **numberList, int index, int numbersSize){
+void maxHeapify(int **numsPtr, int idx, int numItems){
 	
-	int l,r,largest;	
-	//Left and right index
-	if (index == 0){
+	int l,r,largestIdx;	
+
+	//Left and right idx
+	if (idx == 0){
 		l = 1;
 		r = 2;
 	}else{
-		l = index << 1;
+		l = idx << 1;
 		r = l +1;
 	}	
 
 	//Debug for small list
-	printf("--------pre----numbersSize = %d indx = %d  l = %d r = %d---\n",numbersSize,index,l,r );
-	printList(*numberList, numbersSize);
-	if( l < numbersSize && (*numberList)[l] > (*numberList)[index])
-		largest = l;
-	else
-		largest = index;
-	if( r < numbersSize && (*numberList)[r] > (*numberList)[largest])
-		largest = r;
-	if(largest != index){
-		int aux = (*numberList)[index];
-		(*numberList)[index] = (*numberList)[largest];
-		(*numberList)[largest] = aux;
-		maxHeapify(numberList, largest, numbersSize); // recursive  : D
+	//printf("--------pre----numItems = %d indx = %d  l = %d r = %d---\n",numItems,idx,l,r );
+	//printList(*numsPtr, numItems);
+	
+	if( l < numItems && (*numsPtr)[l] > (*numsPtr)[idx]){
+		largestIdx = l;
+	}else{
+		largestIdx = idx;
+	}
+		
+	if( r < numItems && (*numsPtr)[r] > (*numsPtr)[largestIdx]){
+		largestIdx = r;
+	}
+
+	if(largestIdx != idx){
+		int aux = (*numsPtr)[idx];
+		(*numsPtr)[idx] = (*numsPtr)[largestIdx];
+		(*numsPtr)[largestIdx] = aux;
+		maxHeapify(numsPtr, largestIdx, numItems); // recursive  : D
 	}
 	
 	return;
 }
 
 //Create a max heap
-void maxHeap(int **numberList, int numbersSize){
-	for(int i = floor( numbersSize / 2 ); i >= 0; i--)
-		maxHeapify(numberList,i,numbersSize);
+void maxHeap(int **numsPtr, int numItems){
+	for(int i = floor( numItems / 2 ); i >= 0; i--)
+		maxHeapify(numsPtr,i,numItems);
 	return;
 }
 
 int main(int argc, char **argv){
 	
-	int *numberList = NULL;
-    int maxSize = atoi(argv[2]);
-	int numbersSize;
-	int changes,aux;
+	int *numsPtr = NULL;  /*Pointer to numbers to sort*/
+	int aux;
+	sortingParams sp; //Struct type
 
-	printf("MAX SIZE  %d \n",maxSize);
-	numbersSize = readNumbersFromFile(argv[1], maxSize, &numberList);	
-	printList(numberList, numbersSize);
+	if(inputArgsHandler(argc, argv,&sp)){
+		printf("Error: Wrong parameters\n");
+		return 1;
+	}
+
+	printf("Max handle numbers:  %d \n",sp.maxItems);
+	printf("Path:  %s \n",sp.filePath);
+
+	numsPtr = (int *)malloc(sp.maxItems * sizeof(int) );
+	if(numsPtr == NULL){
+		printf("Error allocating  memory\n");
+	}
+	printf("Reading numbers from file... \n");
+	readNumbersFromFile(&sp, &numsPtr );	
+	//printList(numsPtr, sp.numItems);
 	
-	//Init sorting
-	maxHeap(&numberList, numbersSize); // Get a max heap
-	int auxNumbersSize = numbersSize;
+	//Init heapSort
+	printf("Heap sort working ...\n");
+	maxHeap(&numsPtr, sp.numItems); // Get a max heap
+	int auxNumItems = sp.numItems;
 
-	for(int i = numbersSize-1; i > 0; i--){
-		int aux = numberList[0];
-		numberList[0] = numberList[i]; // Swap root vs i node
-		numberList[i] = aux;
-		maxHeapify(&numberList,0, --auxNumbersSize); // call to heapify to ensure  the heap is a max heap 
+	for(int i = sp.numItems - 1; i > 0; i--){
+		aux = numsPtr[0];
+		numsPtr[0] = numsPtr[i]; // Swap root vs i node
+		numsPtr[i] = aux;
+		maxHeapify(&numsPtr,0, --auxNumItems); // call to heapify to ensure  the heap is a max heap 
 	}
 	//End sorting
+	printf("Writing sorted list to file...\n");
+	if(printList2File(numsPtr, &sp)){
+		printf("Error Writing sorted numberts to file.\n");
+	}
+	printf("Done bye.\n");
 
-	printList(numberList, numbersSize);
-	free(numberList);
+	free(numsPtr);
 	return 0;
 }

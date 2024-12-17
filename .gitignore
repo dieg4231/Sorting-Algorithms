@@ -31,3 +31,5 @@
 *.out
 *.app
 *.txt
+
+.DS_Store
